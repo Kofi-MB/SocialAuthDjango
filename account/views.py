@@ -16,11 +16,12 @@ def get_user(request):
 @csrf_exempt
 def send_sms(request):
     phone=request.POST.get('phone')
+    authorization=request.POST.get('authorization')
     headers = {
-        'authorization': 'tY3qVKk2G4Ol8srpoQ5RLagdAfCwXehNEzx17UPJFiWHTZM9bmi6JojuLUkWIwYfO4hZ3QP9rKmTDpal',
+        'authorization': authorization,
     }
     data = {
-        'sender_id': "ClownDev",
+        'sender_id': "TXTIND",
         'message': 'demo msg',
         'language': 'english',
         'route': 'v3',
