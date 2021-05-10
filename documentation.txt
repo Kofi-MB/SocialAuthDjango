@@ -33,3 +33,8 @@ grant_type-(convert_token,password)
 
 username-
 password-
+
+
+http://127.0.0.1:8000/account/get-user(POST)
+
+access_token-
