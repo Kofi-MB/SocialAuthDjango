@@ -15,15 +15,16 @@ def get_user(request):
 
 @csrf_exempt
 def send_sms(request):
+    phone=request.POST.get('phone')
     headers = {
         'authorization': 'tY3qVKk2G4Ol8srpoQ5RLagdAfCwXehNEzx17UPJFiWHTZM9bmi6JojuLUkWIwYfO4hZ3QP9rKmTDpal',
     }
     data = {
-        'sender_id': "TXTIND",
-        'message': 'lore, ipsium kwhkvfkwb wkbf wm fkw  fekbiwb flwi fec ibwfgweefiw fwh hf9  hg fbwf8o3t4r3 99r 93t3ihh h3hh9p3hyt 3p98h ihh ho h2hih wbf bwg jiwah fqwljbfiiwbk;f',
+        'sender_id': "ClownDev",
+        'message': 'demo msg',
         'language': 'english',
         'route': 'v3',
-        'numbers': '9178595277'
+        'numbers': phone
     }
 
     response = requests.post('https://www.fast2sms.com/dev/bulkV2', headers=headers, data=data)
