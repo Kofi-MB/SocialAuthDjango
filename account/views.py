@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from oauth2_provider.models import AccessToken
 from django.http import JsonResponse
@@ -9,9 +10,12 @@ import json
 @csrf_exempt
 def get_user(request):
     access_token=request.POST.get('access_token')
-    user_id=AccessToken.objects.get(token=access_token).user_id
-    user=list(User.objects.filter(id=user_id).values())
-    return JsonResponse(user,safe=False)
+    try:
+        user_id=AccessToken.objects.get(token=access_token).user_id
+        user=list(User.objects.filter(id=user_id).values())
+        return JsonResponse(user,safe=False)
+    except:
+        return JsonResponse('invalidate-sessions',safe=False)
 
 @csrf_exempt
 def send_sms(request):
@@ -38,3 +42,9 @@ def send_sms(request):
     balance=json.loads(balanceResponse.text)
     result={'status':status,'balance':balance}
     return JsonResponse(result,safe=False)
+
+
+@csrf_exempt
+def test(request):
+    print(request)
+    return render(request,'index.html')
