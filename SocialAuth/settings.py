@@ -159,6 +159,9 @@ AUTHENTICATION_BACKENDS = (
     'social_core.backends.facebook.FacebookOAuth2',
     'social_core.backends.google.GoogleOAuth2',
     'social_core.backends.twitter.TwitterOAuth',
+    # 'social_core.backends.Linkedin.linkedin-oauth2',
+    'social_core.backends.linkedin.LinkedinOAuth2',
+
 
     # drf_social_oauth2
     'drf_social_oauth2.backends.DjangoOAuth2',
@@ -189,6 +192,9 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
 
 SOCIAL_AUTH_TWITTER_KEY = 'lNx...yQH8u'
 SOCIAL_AUTH_TWITTER_SECRET = '8virx...Div4dwB'
+
+SOCIAL_AUTH_LINKEDIN_OAUTH2_KEY = '86bf5uhj67ssy0'
+SOCIAL_AUTH_LINKEDIN_OAUTH2_SECRET = '1Du0YxPl4wz2osAJ'
 #
 CORS_ORIGIN_ALLOW_ALL = False
 CORS_ORIGIN_WHITELIST = (
