@@ -5,7 +5,7 @@ from oauth2_provider.models import AccessToken
 from django.http import JsonResponse
 import requests
 import json
-
+from .models import CompanyDetail
 
 
 
@@ -15,8 +15,27 @@ def get_user(request):
     access_token=request.POST.get('access_token')
     try:
         user_id=AccessToken.objects.get(token=access_token).user_id
-        user=list(User.objects.filter(id=user_id).values())
-        return JsonResponse(user,safe=False)
+        user = User.objects.get(id=user_id)
+        data={
+            'access_token': access_token,
+            'email':user.email,
+            'first_name':user.first_name,
+            'last_name':user.first_name,
+            'username':user.first_name,
+            'status':False
+        }
+        try:
+            company = CompanyDetail.objects.get(user=user)
+            status=True
+            companydetails={
+                'companyname' :company.companyname,
+                'status':True
+            }
+            data.update(companydetails)
+        except:
+            status=False
+        print(data)
+        return JsonResponse(data,safe=False)
     except:
         return JsonResponse('invalidate-sessions',safe=False)
 
@@ -48,20 +67,18 @@ def send_sms(request):
 
 
 @csrf_exempt
-def test(request):
+def ldaccessToken(request):
+    code=request.POST.get('code')
     grant_type='authorization_code'
-    code='AQT6UilUxd-rKI0twrNaKtLOL9TlAcz1XjietLMeens9pBJ_LhAo3e5zHY0eN9VmAGPm8-bfwdNHdBtDzImpaMX7_KPFZgoHYDUBBkNrsn_JhImX28Mi9v6CC4mrdspFG8vrl17YNP_2guRij-DTYSMBgxIKMP89TQXl6XdOsd9xtKHBYyi8EFBp2ksNB2c_rXIzqg1uXup4zhL8CE8'
+    # code='AQT6UilUxd-rKI0twrNaKtLOL9TlAcz1XjietLMeens9pBJ_LhAo3e5zHY0eN9VmAGPm8-bfwdNHdBtDzImpaMX7_KPFZgoHYDUBBkNrsn_JhImX28Mi9v6CC4mrdspFG8vrl17YNP_2guRij-DTYSMBgxIKMP89TQXl6XdOsd9xtKHBYyi8EFBp2ksNB2c_rXIzqg1uXup4zhL8CE8'
     client_id='86bf5uhj67ssy0'
     client_secret='1Du0YxPl4wz2osAJ'
     redirect_uri='http://localhost:3000/linkedin'
 
     data=requests.request('GET',url=f"https://www.linkedin.com/oauth/v2/accessToken?grant_type={grant_type}&code={code}&client_id={client_id}&client_secret={client_secret}&redirect_uri={redirect_uri}")
-    print(data.text)
+    # print(data.text)
     data=json.loads(data.text)
-
     url = 'http://127.0.0.1:8000/auth/convert-token'
-
-    print(data['access_token'])
     data = {
         'token': data['access_token'],
         'backend':'linkedin-oauth2',
@@ -72,5 +89,37 @@ def test(request):
 
 
     converttoken = requests.post(url, data=data)
-    print(converttoken.text)
-    return JsonResponse(True,safe=False)
+    accesstoken=json.loads(converttoken.text)
+    print(accesstoken)
+    accesstoken=accesstoken['access_token']
+    return JsonResponse(accesstoken,safe=False)
+
+@csrf_exempt
+def setcompany(request):
+    print(request.POST)
+    access_token = request.POST.get('access_token')
+    companyname = request.POST.get('companyname')
+    try:
+        user_id = AccessToken.objects.get(token=access_token).user_id
+        user = User.objects.get(id=user_id)
+        try:
+            status='updated'
+            company=CompanyDetail.objects.get(user=user)
+            company.companyname=companyname
+            company.save()
+        except:
+            company=CompanyDetail(user=user,companyname=companyname)
+            company.save()
+            status='new data creted'
+        data = {
+            'access_token':access_token,
+            'email': user.email,
+            'first_name': user.first_name,
+            'last_name': user.first_name,
+            'username': user.first_name,
+            'status': True,
+            'companyname': company.companyname,
+        }
+        return JsonResponse(data, safe=False)
+    except:
+        return JsonResponse('invalidate-sessions', safe=False)
