@@ -4,8 +4,11 @@ from django.db import models
 
 class CustomAuth(models.Model):
     user=models.OneToOneField(User,on_delete=models.CASCADE)
-    mobile_number=models.CharField(max_length=12)
+    mobile_number=models.CharField(max_length=12,unique=True)
+    otp=models.CharField(max_length=6)
 
+    def __str__(self):
+        return str(self.user)
 
 
 class CompanyDetail(models.Model):

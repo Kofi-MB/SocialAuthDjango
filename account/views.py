@@ -1,3 +1,5 @@
+import random
+
 from django.contrib.auth.models import User
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
@@ -5,7 +7,7 @@ from oauth2_provider.models import AccessToken
 from django.http import JsonResponse
 import requests
 import json
-from .models import CompanyDetail
+from .models import CompanyDetail,CustomAuth
 
 
 
@@ -40,10 +42,8 @@ def get_user(request):
         return JsonResponse('invalidate-sessions',safe=False)
 
 @csrf_exempt
-def send_sms(request):
-    phone=request.POST.get('phone')
-    authorization=request.POST.get('authorization')
-    message=request.POST.get('message')
+def send_sms(phone,message):
+    authorization=''
     headers = {
         'authorization': authorization,
     }
@@ -123,3 +123,89 @@ def setcompany(request):
         return JsonResponse(data, safe=False)
     except:
         return JsonResponse('invalidate-sessions', safe=False)
+
+
+def create_user(request):
+    password='Password@0123'
+    username='bkpppppk'
+    number=82854545
+    otp = str(random.randint(111111, 999999))
+    print(otp)
+    companyname='vbjdk'
+    try:
+        new_user=User.objects.create_user(username=username,password=password)
+        new_user.save()
+        error='no error'
+        try:
+            cu = CustomAuth(user=new_user, mobile_number=number,otp=otp)
+            cu.save()
+            company=CompanyDetail(user=new_user,companyname=companyname)
+            company.save()
+            send_sms(number,otp)
+        except:
+            new_user.delete()
+            error ='this mobole number alredy exist'
+    except:
+        error='this user alredy exist'
+
+    print(error)
+    return JsonResponse(error,safe=False)
+
+
+def check_otp(request):
+    mobile='82854545'
+    otp='11'
+    error="no error"
+    dicdata={}
+    try:
+        cu=CustomAuth.objects.get(mobile_number=mobile)
+        db_otp=cu.otp
+        if db_otp==otp:
+            error="no error"
+            user=cu.user
+            company=CompanyDetail.objects.get(user=user)
+            print(company)
+            url = 'http://127.0.0.1:8000/auth/token'
+            data = {
+
+                'username':user.username,
+                'password':'Password@0123',
+                'grant_type': 'password',
+                'client_id': '9l6eJ9iiCVedDF8tsvP8SvrfOqBbPn9wA4xu93iv',
+                'client_secret': 'NjNuiMH2p15cuVygvl4LV9RxtmJi28J02ZBUyiSAQYQfEL4xj5SdNEs1UvLv09zCaAzWuYVNe7oQIn5TYIvoocDyO792HPLkOhiv1DrDHZnJg3HenXkXggaNZ5EqKxUP'
+            }
+
+            token = requests.post(url, data=data)
+            access_token=json.loads(token.text)
+
+            dicdata.update( {
+                'access_token': access_token['access_token'],
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.first_name,
+                'username': user.first_name,
+                'status': True,
+                'companyname': company.companyname,
+                'error': "no error"
+            })
+            print(dicdata)
+        else:
+            dicdata.update({'error': 'worng otp'})
+    except:
+        dicdata.update({'error': "number does't exist"})
+    print(error)
+    return JsonResponse(dicdata,safe=False)
+
+
+def otp_request_for_login(request):
+    mobile = '82854545'
+    try:
+        cu=CustomAuth.objects.get(mobile_number=mobile)
+        otp = str(random.randint(111111, 999999))
+        cu.otp=otp
+        cu.save()
+        data='success'
+        send_sms(mobile,otp)
+    except:
+        data="does't exist"
+    return JsonResponse(data,safe=False)
