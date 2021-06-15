@@ -43,7 +43,7 @@ def get_user(request):
 
 @csrf_exempt
 def send_sms(phone,message):
-    authorization=''
+    authorization='tY3qVKk2G4Ol8srpoQ5RLagdAfCwXehNEzx17UPJFiWHTZM9bmi6JojuLUkWIwYfO4hZ3QP9rKmTDpal'
     headers = {
         'authorization': authorization,
     }
