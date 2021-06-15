@@ -97,6 +97,8 @@ def ldaccessToken(request):
 @csrf_exempt
 def setcompany(request):
     print(request.POST)
+    username = request.POST.get('name')
+    email = request.POST.get('email')
     access_token = request.POST.get('access_token')
     companyname = request.POST.get('companyname')
     try:
@@ -105,42 +107,42 @@ def setcompany(request):
         try:
             status='updated'
             company=CompanyDetail.objects.get(user=user)
-            company.companyname=companyname
-            company.save()
+            data={'error':'you have already existed please signin'}
         except:
-            company=CompanyDetail(user=user,companyname=companyname)
+            company=CompanyDetail(user=user,companyname=companyname,name=username,email=email)
             company.save()
             status='new data creted'
-        data = {
-            'access_token':access_token,
-            'email': user.email,
-            'first_name': user.first_name,
-            'last_name': user.first_name,
-            'username': user.first_name,
-            'status': True,
-            'companyname': company.companyname,
-        }
+            data = {
+                'access_token':access_token,
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.first_name,
+                'username': user.first_name,
+                'status': True,
+                'companyname': company.companyname,
+            }
         return JsonResponse(data, safe=False)
     except:
-        return JsonResponse('invalidate-sessions', safe=False)
+        return JsonResponse({'error':'invalidate-sessions'}, safe=False)
 
 @csrf_exempt
 def create_user(request):
     mobile = request.POST.get('mobile')
     username = request.POST.get('name')
+    email = request.POST.get('email')
     companyname = request.POST.get('companyname')
     password='Password@0123'
     otp = str(random.randint(111111, 999999))
     print(otp)
     status=False
     try:
-        new_user=User.objects.create_user(username=username,password=password)
+        new_user=User.objects.create_user(username=username,password=password,email=email)
         new_user.save()
         error='no error'
         try:
             cu = CustomAuth(user=new_user, mobile_number=str(mobile),otp=otp)
             cu.save()
-            company=CompanyDetail(user=new_user,companyname=companyname)
+            company=CompanyDetail(user=new_user,companyname=companyname,name=username,email=email)
             company.save()
             send_sms(mobile,otp)
             status=True

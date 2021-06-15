@@ -13,6 +13,8 @@ class CustomAuth(models.Model):
 
 class CompanyDetail(models.Model):
     user=models.ForeignKey(User,on_delete=models.CASCADE)
+    name=models.CharField(max_length=50,blank=True,null=True)
+    email=models.CharField(max_length=50,blank=True,null=True)
     companyname=models.CharField(max_length=50)
 
     def __str__(self):
