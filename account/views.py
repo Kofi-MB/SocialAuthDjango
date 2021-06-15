@@ -41,7 +41,7 @@ def get_user(request):
     except:
         return JsonResponse('invalidate-sessions',safe=False)
 
-@csrf_exempt
+
 def send_sms(phone,message):
     authorization='tY3qVKk2G4Ol8srpoQ5RLagdAfCwXehNEzx17UPJFiWHTZM9bmi6JojuLUkWIwYfO4hZ3QP9rKmTDpal'
     headers = {
@@ -124,42 +124,46 @@ def setcompany(request):
     except:
         return JsonResponse('invalidate-sessions', safe=False)
 
-
+@csrf_exempt
 def create_user(request):
+    mobile = request.POST.get('mobile')
+    username = request.POST.get('name')
+    companyname = request.POST.get('companyname')
     password='Password@0123'
-    username='bkpppppk'
-    number=82854545
     otp = str(random.randint(111111, 999999))
     print(otp)
-    companyname='vbjdk'
+    status=False
     try:
         new_user=User.objects.create_user(username=username,password=password)
         new_user.save()
         error='no error'
         try:
-            cu = CustomAuth(user=new_user, mobile_number=number,otp=otp)
+            cu = CustomAuth(user=new_user, mobile_number=str(mobile),otp=otp)
             cu.save()
             company=CompanyDetail(user=new_user,companyname=companyname)
             company.save()
-            send_sms(number,otp)
+            send_sms(mobile,otp)
+            status=True
         except:
             new_user.delete()
-            error ='this mobole number alredy exist'
+            error ='this mobile number alredy exist'
     except:
         error='this user alredy exist'
 
     print(error)
-    return JsonResponse(error,safe=False)
+    data={'status':status,'error':error}
+    return JsonResponse(data,safe=False)
 
-
+@csrf_exempt
 def check_otp(request):
-    mobile='82854545'
-    otp='11'
-    error="no error"
+    mobile = request.POST.get('mobile')
+    otp = request.POST.get('otp')
+    print(otp,type(otp))
     dicdata={}
     try:
         cu=CustomAuth.objects.get(mobile_number=mobile)
         db_otp=cu.otp
+        print(db_otp,type(db_otp))
         if db_otp==otp:
             error="no error"
             user=cu.user
@@ -183,29 +187,30 @@ def check_otp(request):
                 'email': user.email,
                 'first_name': user.first_name,
                 'last_name': user.first_name,
-                'username': user.first_name,
+                'username': user.username,
                 'status': True,
                 'companyname': company.companyname,
-                'error': "no error"
+                'error': "no"
             })
             print(dicdata)
         else:
             dicdata.update({'error': 'worng otp'})
     except:
         dicdata.update({'error': "number does't exist"})
-    print(error)
+
     return JsonResponse(dicdata,safe=False)
 
-
+@csrf_exempt
 def otp_request_for_login(request):
-    mobile = '82854545'
+    mobile = request.POST.get('mobile')
+    print(mobile)
     try:
-        cu=CustomAuth.objects.get(mobile_number=mobile)
+        cu=CustomAuth.objects.get(mobile_number=str(mobile))
         otp = str(random.randint(111111, 999999))
         cu.otp=otp
         cu.save()
-        data='success'
+        data=True
         send_sms(mobile,otp)
     except:
-        data="does't exist"
+        data=False
     return JsonResponse(data,safe=False)
